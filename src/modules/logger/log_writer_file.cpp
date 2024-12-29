@@ -152,7 +152,28 @@ bool LogWriterFile::init_logfile_encryption(const char *filename)
 	rsa_crypto.close();
 
 	// Write the encrypted key to the disk
-	int key_fd = ::open((const char *)filename, O_CREAT | O_WRONLY | O_DIRECT | O_SYNC, PX4_O_MODE_666);
+
+	// Allocate a buffer for filename
+	size_t fnlen = strlen(filename);
+	char *tmp_buf = (char *)malloc(fnlen + 1);
+
+	if (!tmp_buf) {
+		PX4_ERR("out of memory");
+		free(key);
+		return false;
+	}
+
+	// Copy the original logfile name, and append 'k' to the filename
+
+	memcpy(tmp_buf, filename, fnlen + 1);
+	tmp_buf[fnlen - 1] = 'k';
+	tmp_buf[fnlen] = 0;
+
+	int key_fd = ::open((const char *)tmp_buf, O_CREAT | O_WRONLY, PX4_O_MODE_666);
+
+	// The file name is no longer needed, free it
+	free(tmp_buf);
+	tmp_buf = nullptr;
 
 	if (key_fd < 0) {
 		PX4_ERR("Can't open key file, errno: %d", errno);
@@ -160,9 +181,9 @@ bool LogWriterFile::init_logfile_encryption(const char *filename)
 		return false;
 	}
 
-	// write the header to the combined key exchange & cipherdata file
+	// write the header to the key exchange file
 	struct ulog_key_header_s keyfile_header = {
-		.magic = {'U', 'L', 'o', 'g', 'E', 'n', 'c'},
+		.magic = {'U', 'L', 'o', 'g', 'K', 'e', 'y'},
 		.hdr_ver = 1,
 		.timestamp = hrt_absolute_time(),
 		.exchange_algorithm = CRYPTO_RSA_OAEP,
@@ -637,11 +658,7 @@ size_t LogWriterFile::LogFileBuffer::get_read_ptr(void **ptr, bool *is_part)
 
 bool LogWriterFile::LogFileBuffer::start_log(const char *filename)
 {
-#if defined(PX4_CRYPTO)
-	_fd = ::open(filename, O_APPEND | O_WRONLY, PX4_O_MODE_666);
-#else
 	_fd = ::open(filename, O_CREAT | O_WRONLY, PX4_O_MODE_666);
-#endif
 	_had_write_error.store(false);
 
 	if (_fd < 0) {

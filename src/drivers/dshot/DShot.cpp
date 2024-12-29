@@ -453,7 +453,7 @@ bool DShot::updateOutputs(bool stop_motors, uint16_t outputs[MAX_ACTUATORS],
 
 			if (_current_command.num_repetitions == 0 && _current_command.save) {
 				_current_command.save = false;
-				_current_command.num_repetitions = 10;
+				_current_command.num_repetitions = DSHOT_CMD_REPEAT;
 				_current_command.command = dshot_command_t::DShot_cmd_save_settings;
 			}
 		}
@@ -662,7 +662,7 @@ void DShot::handle_vehicle_commands()
 				} else {
 					command_ack.result = vehicle_command_ack_s::VEHICLE_CMD_RESULT_ACCEPTED;
 					_current_command.motor_mask = 1 << index;
-					_current_command.num_repetitions = 10;
+					_current_command.num_repetitions = DSHOT_CMD_REPEAT;
 					_current_command.save = true;
 				}
 

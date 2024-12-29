@@ -109,7 +109,7 @@ Loiter::set_loiter_position()
 			setLoiterItemFromCurrentPositionSetpoint(&_mission_item);
 
 		} else if (_navigator->get_vstatus()->vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROTARY_WING) {
-			setLoiterItemFromCurrentPositionWithBraking(&_mission_item);
+			setLoiterItemFromCurrentPositionWithBreaking(&_mission_item);
 
 		} else {
 			setLoiterItemFromCurrentPosition(&_mission_item);

@@ -49,6 +49,7 @@ using namespace time_literals;
 #endif
 
 /** Dshot PWM frequency, Hz */
+static constexpr unsigned int DSHOT_CMD_REPEAT  =  2;
 static constexpr unsigned int DSHOT150  =  150000u;
 static constexpr unsigned int DSHOT300  =  300000u;
 static constexpr unsigned int DSHOT600  =  600000u;

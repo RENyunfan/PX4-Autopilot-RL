@@ -241,11 +241,10 @@ void Standard::update_transition_state()
 
 		if (_v_control_mode->flag_control_climb_rate_enabled) {
 			// control backtransition deceleration using pitch.
-			pitch_body = Eulerf(Quatf(_mc_virtual_att_sp->q_d)).theta();
+			pitch_body = update_and_get_backtransition_pitch_sp();
 		}
 
 		const Quatf q_sp(Eulerf(roll_body, pitch_body, yaw_body));
-
 		q_sp.copyTo(_v_att_sp->q_d);
 
 		_pusher_throttle = 0.0f;

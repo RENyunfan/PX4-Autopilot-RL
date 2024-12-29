@@ -92,13 +92,6 @@ public:
 	void on_active() override;
 
 	/**
-	 * @brief on inactive
-	 * Poll required topics also when incative for rtl time estimate.
-	 *
-	 */
-	void on_inactive() override;
-
-	/**
 	 * @brief Calculate the estimated time needed to return to launch.
 	 *
 	 * @return estimated time to return to launch.

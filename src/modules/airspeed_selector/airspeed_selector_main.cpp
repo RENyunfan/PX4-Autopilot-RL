@@ -52,7 +52,6 @@
 #include <uORB/topics/airspeed_validated.h>
 #include <uORB/topics/estimator_selector_status.h>
 #include <uORB/topics/estimator_status.h>
-#include <uORB/topics/launch_detection_status.h>
 #include <uORB/topics/mavlink_log.h>
 #include <uORB/topics/parameter_update.h>
 #include <uORB/topics/position_setpoint.h>
@@ -125,7 +124,6 @@ private:
 	uORB::Subscription _vehicle_status_sub{ORB_ID(vehicle_status)};
 	uORB::Subscription _vtol_vehicle_status_sub{ORB_ID(vtol_vehicle_status)};
 	uORB::Subscription _position_setpoint_sub{ORB_ID(position_setpoint)};
-	uORB::Subscription _launch_detection_status_sub{ORB_ID(launch_detection_status)};
 	uORB::SubscriptionMultiArray<airspeed_s, MAX_NUM_AIRSPEED_SENSORS> _airspeed_subs{ORB_ID::airspeed};
 
 
@@ -390,23 +388,16 @@ AirspeedModule::Run()
 				input_data.airspeed_timestamp = airspeed_raw.timestamp;
 				input_data.air_temperature_celsius = airspeed_raw.air_temperature_celsius;
 
-				if (_in_takeoff_situation) {
-					// set flag to false if either speed is above stall speed,
-					// or launch detection + land detection indicate flying
-					const bool speed_above_stall = airspeed_raw.indicated_airspeed_m_s > _param_fw_airspd_stall.get();
-					airspeed_raw.indicated_airspeed_m_s > _param_fw_airspd_stall.get()
-					|| (PX4_ISFINITE(_ground_minus_wind_CAS) && _ground_minus_wind_CAS > _param_fw_airspd_stall.get());
+				// takeoff situation is active from start till one of the sensors' IAS or groundspeed_CAS is above stall speed
+				if (_in_takeoff_situation &&
+				    (airspeed_raw.indicated_airspeed_m_s > _param_fw_airspd_stall.get() ||
+				     (PX4_ISFINITE(_ground_minus_wind_CAS) && _ground_minus_wind_CAS > _param_fw_airspd_stall.get()))) {
+					_in_takeoff_situation = false;
+				}
 
-					launch_detection_status_s launch_detection_status{};
-					_launch_detection_status_sub.copy(&launch_detection_status);
-					const bool launch_detection_flying = launch_detection_status.launch_detection_state ==
-									     launch_detection_status_s::STATE_FLYING
-									     && !_vehicle_land_detected.landed;
-					_in_takeoff_situation = !(speed_above_stall || launch_detection_flying);
-
-				} else {
-					// reset takeoff_situation to true when not in air and not in fixed-wing mode
-					_in_takeoff_situation = !in_air_fixed_wing;
+				// reset takeoff_situation to true when not in air and not in fixed-wing mode
+				if (!in_air_fixed_wing) {
+					_in_takeoff_situation = true;
 				}
 
 				input_data.in_fixed_wing_flight = (in_air_fixed_wing && !_in_takeoff_situation);

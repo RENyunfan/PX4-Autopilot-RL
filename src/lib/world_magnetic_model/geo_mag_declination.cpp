@@ -53,7 +53,7 @@
 
 using math::constrain;
 
-static unsigned get_lookup_table_index(float *val, float min, float max)
+static constexpr unsigned get_lookup_table_index(float *val, float min, float max)
 {
 	/* for the rare case of hitting the bounds exactly
 	 * the rounding logic wouldn't fit, so enforce it.
@@ -66,7 +66,7 @@ static unsigned get_lookup_table_index(float *val, float min, float max)
 	return static_cast<unsigned>((-(min) + *val) / SAMPLING_RES);
 }
 
-static float get_table_data(float latitude_deg, float longitude_deg, const int16_t table[LAT_DIM][LON_DIM])
+static constexpr float get_table_data(float latitude_deg, float longitude_deg, const int16_t table[LAT_DIM][LON_DIM])
 {
 	latitude_deg = math::constrain(latitude_deg, SAMPLING_MIN_LAT, SAMPLING_MAX_LAT);
 

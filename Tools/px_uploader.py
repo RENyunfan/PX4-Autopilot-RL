@@ -428,8 +428,7 @@ class uploader:
 
         percent = (float(progress) / float(maxVal)) * 100.0
 
-        redraw = "\r" if sys.stdout.isatty() else "\n"
-        sys.stdout.write("%s%s: [%-20s] %.1f%%" % (redraw, label, '='*int(percent/5.0), percent))
+        sys.stdout.write("\r%s: [%-20s] %.1f%%" % (label, '='*int(percent/5.0), percent))
         sys.stdout.flush()
 
     # send the CHIP_ERASE command and wait for the bootloader to become ready
